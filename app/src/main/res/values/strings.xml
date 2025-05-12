@@ -1,3 +1,14 @@
 <resources>
     <string name="app_name">FromScratch</string>
+
+        <!-- Login Screen Strings -->
+        <string name="login_title">Login</string>
+        <string name="username_hint">Username</string>
+        <string name="password_hint">Password</string>
+        <string name="login_button_text">LOGIN</string>
+        <string name="sign_up_prompt">Don\'t have an account? Sign Up</string>
+        <string name="logo_content_description">App Logo</string>
+
+        <!-- (Optional: Add other app strings here) -->
+
 </resources>

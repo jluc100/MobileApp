@@ -1,19 +1,21 @@
 package com.example.fromscratch;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.fromscratch.databinding.ActivitySignUpBinding;
-import com.example.fromscratch.SignupRequest;
-import com.example.fromscratch.ApiClient;
-import com.example.fromscratch.ApiService;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -31,9 +33,9 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivitySignUpBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        EdgeToEdge.enable(this);
         setupWindowInsets();
         setupSignUpButton();
+        setupLoginLink();  // Added method to handle login link click
     }
 
     private void setupWindowInsets() {
@@ -46,21 +48,17 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupSignUpButton() {
         binding.signUpButton.setOnClickListener(v -> {
-            // Get user input
             String username = binding.usernameEditText.getText().toString().trim();
             String email = binding.emailEditText.getText().toString().trim();
             String password = binding.passwordEditText.getText().toString().trim();
 
-            // Validate inputs
             if (validateInputs(username, email, password)) {
                 binding.progressBar.setVisibility(View.VISIBLE);
                 binding.signUpButton.setEnabled(false);
 
-                // Prepare the request
                 SignupRequest request = new SignupRequest(username, email, password);
                 ApiService apiService = ApiClient.getClient().create(ApiService.class);
 
-                // Make the network call
                 apiService.signUp(request).enqueue(new Callback<Void>() {
                     @Override
                     public void onResponse(Call<Void> call, Response<Void> response) {
@@ -68,9 +66,22 @@ public class MainActivity extends AppCompatActivity {
                         binding.signUpButton.setEnabled(true);
 
                         if (response.isSuccessful()) {
-                            showToast("Signup successful for " + username);
+                            try {
+                                // Extract the success message from the response body (if any)
+                                String message = new JSONObject(response.errorBody().string()).optString("message", "User Created Successfully");
+                                showToast(message);
+                            } catch (Exception e) {
+                                showToast("User Created Successfully");
+                            }
                         } else {
-                            showToast("Signup failed. Try again.");
+                            try {
+                                String errorBody = response.errorBody().string();
+                                JSONObject jsonObject = new JSONObject(errorBody);
+                                String errorMessage = jsonObject.optString("error", "Signup failed");
+                                showToast(errorMessage);
+                            } catch (IOException | JSONException e) {
+                                showToast("Signup failed with unexpected error.");
+                            }
                         }
                     }
 
@@ -82,6 +93,14 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
             }
+        });
+    }
+
+    private void setupLoginLink() {
+        // Handle click on the "Login" link to navigate to the login screen
+        binding.loginTextView.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, LoginActivity.class);  // Navigate to LoginActivity
+            startActivity(intent);
         });
     }
 
@@ -113,6 +132,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showToast(String message) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
     }
 }
