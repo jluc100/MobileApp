@@ -4,7 +4,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ApiClient {
-    private static final String BASE_URL = "https://api-vcxf.onrender.com/";
+    private static final String BASE_URL = "https://api-project-2iaj.onrender.com/";
     private static Retrofit retrofit;
 
     public static Retrofit getClient() {
